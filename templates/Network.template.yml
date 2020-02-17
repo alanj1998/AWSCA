@@ -54,11 +54,16 @@ Resources:
                 Ref: MainVPC
                 
     ## Nat Gateway
+    ### EIP
     ElasticIp1:
         Type: AWS::EC2::EIP
         Properties:
             Domain: vpc
-    
+    ElasticIp2:
+        Type: AWS::EC2::EIP
+        Properties:
+            Domain: vpc
+    ### NatGateway
     NatGateway1:
         Type: AWS::EC2::NatGateway
         Properties:
@@ -68,12 +73,6 @@ Resources:
                 Fn::GetAtt: 
                 - ElasticIp1
                 - AllocationId
-    
-    ElasticIp2:
-        Type: AWS::EC2::EIP
-        Properties:
-            Domain: vpc
-    
     NatGateway2:
         Type: AWS::EC2::NatGateway
         Properties:
@@ -106,8 +105,6 @@ Resources:
             DestinationCidrBlock: 0.0.0.0/0
             GatewayId: 
                 Ref: InternetGateway
-            
-    
     ### Private Route Table
     PrivateRouteTable:
         Type: AWS::EC2::RouteTable
@@ -163,7 +160,7 @@ Resources:
                 Ref: PublicACL
             SubnetId:
                 Ref: PublicSubnet1
-                
+              
     PublicSubnet2:
         Type: AWS::EC2::Subnet
         Properties:
