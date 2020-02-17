@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Main Application 
+Resources:
+    DynamoDBTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+            KeySchema:
+                - AttributeName: pk
+                  KeyType: HASH
+                - AttributeName: sk
+                  KeyType: RANGE
+            ProvisionedThroughput:
+                ReadCapacityUnits: 5
+                WriteCapacityUnits: 5
+            TableName: CAVideoTables
+    S3Bucket:
+        Type: AWS::S3::Bucket
+        Properties:
+            BucketName: VideosBucket
+    UploadVideoLambda:
+        Type: AWS::Lambda::Function
+        Properties:
+            FunctionName: Upload Video
+            Handler: handler
+            Runtime: nodejs12.x
+Outputs:
+    DynamoDBId:
+        Value:
+            Ref: DynamoDBTable
+        Export:
+            Name: DynamoDBId
