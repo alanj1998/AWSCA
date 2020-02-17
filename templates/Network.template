@@ -1,0 +1,210 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: VPC
+Resources:
+    # VPC
+    ## Main VPC
+    MainVPC:
+        Type: AWS::EC2::VPC
+        Properties:
+            CidrBlock: 10.0.0.0/16
+            InstanceTenancy: Default
+    
+    ## ACL
+    MainVPCPublicAcl:
+        Type: AWS::EC2::NetworkAcl
+        Properties:    
+            VpcId: 
+                Ref: MainVPC
+    ### ACL Entries
+    InboundACLEntry:
+        Type: AWS::EC2::NetworkAclEntry
+        Properties: 
+            NetworkAclId:
+                Ref: MainVPCPublicAcl
+            RuleNumber: 100
+            Egress: false
+            PortRange:
+                From: 0
+                To: 65536
+            Protocol: -1
+            RuleAction: allow
+    OutboundACLEntry:
+        Type: AWS::EC2::NetworkAclEntry
+        Properties: 
+            NetworkAclId:
+                Ref: MainVPCPublicAcl
+            RuleNumber: 100
+            Egress: true
+            PortRange:
+                From: 0
+                To: 65536
+            Protocol: -1
+            RuleAction: allow 
+    
+    ## Internet Gateway
+    InternetGateway:
+        Type: AWS::EC2::InternetGateway
+    ### Associate with VPC
+    InternetGatewayVPCAssoc:
+        Type: AWS::EC2::VPCGatewayAttachment
+        Properties:
+            InternetGatewayId:
+                Ref: InternetGateway
+            VpcId:
+                Ref: MainVPC
+                
+    ## Nat Gateway
+    ElasticIp1:
+        Type: AWS::EC2::EIP
+        Properties:
+            Domain: vpc
+    
+    NatGateway1:
+        Type: AWS::EC2::NatGateway
+        Properties:
+            SubnetId:
+                Ref: PublicSubnet1
+            AllocationId:
+                Fn::GetAtt: 
+                - ElasticIp1
+                - AllocationId
+    
+    ElasticIp2:
+        Type: AWS::EC2::EIP
+        Properties:
+            Domain: vpc
+    
+    NatGateway2:
+        Type: AWS::EC2::NatGateway
+        Properties:
+            SubnetId:
+                Ref: PublicSubnet2
+            AllocationId:
+                Fn::GetAtt: 
+                - ElasticIp2
+                - AllocationId
+    
+    ## Route Tables
+    ### Public Route Table
+    PublicRouteTable:
+        Type: AWS::EC2::RouteTable
+        Properties:
+            VpcId: 
+                Ref: MainVPC
+    ### Public Table Routes
+    PublicLocalRoute:
+        Type: AWS::EC2::Route
+        Properties:
+            RouteTableId:
+                Ref: PublicRouteTable
+            DestinationCidrBlock: 10.0.0.0/16
+    PublicInternetRoute:
+        Type: AWS::EC2::Route
+        Properties:
+            RouteTableId:
+                Ref: PublicRouteTable
+            DestinationCidrBlock: 0.0.0.0/0
+            GatewayId: 
+                Ref: InternetGateway
+            
+    
+    ### Private Route Table
+    PrivateRouteTable:
+        Type: AWS::EC2::RouteTable
+        Properties:
+            VpcId:
+                Ref: MainVPC
+    ### Private Table Routes
+    PrivateLocalRoute:
+        Type: AWS::EC2::Route
+        Properties:
+            RouteTableId:
+                Ref: PrivateRouteTable
+            DestinationCidrBlock: 10.0.0.0/16
+    PrivateNatRoute1:
+        Type: AWS::EC2::Route
+        Properties:
+            RouteTableId:
+                Ref: PrivateRouteTable
+            DestinationCidrBlock: 0.0.0.0/0
+            NatGatewayId:
+                Ref: NatGateway1
+    PrivateNatRoute2:
+        Type: AWS::EC2::Route
+        Properties:
+            RouteTableId:
+                Ref: PrivateRouteTable
+            DestinationCidrBlock: 0.0.0.0/0
+            NatGatewayId:
+                Ref: NatGateway2
+                
+    # Public Subnet
+    PublicSubnet1:
+        Type: AWS::EC2::Subnet
+        Properties:
+            AvailabilityZone: eu-west-1a
+            VpcId: 
+                Ref: MainVPC
+            MapPublicIpOnLaunch: true
+            CidrBlock: 10.0.1.0/24
+    ## Route Table Association
+    PublicSubnet1RouteTableAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+            RouteTableId: 
+                Ref: PublicRouteTable
+            SubnetId:
+                Ref: PublicSubnet1
+    
+    PublicSubnet2:
+        Type: AWS::EC2::Subnet
+        Properties:
+            AvailabilityZone: eu-west-1b
+            VpcId: 
+                Ref: MainVPC
+            MapPublicIpOnLaunch: true
+            CidrBlock: 10.0.1.0/24
+    ## Route Table Association
+    PublicSubnet2RouteTableAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+            RouteTableId: 
+                Ref: PublicRouteTable
+            SubnetId:
+                Ref: PublicSubnet2
+    ## ACL
+    
+    # Private Subnet
+    PrivateSubnet1:
+        Type: AWS::EC2::Subnet
+        Properties:
+            AvailabilityZone: eu-west-1a
+            VpcId: 
+                Ref: MainVPC
+            MapPublicIpOnLaunch: true
+            CidrBlock: 10.0.1.0/24
+    ## Route Table Association
+    PrivateSubnet1RouteTableAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+            RouteTableId: 
+                Ref: PrivateRouteTable
+            SubnetId:
+                Ref: PrivateSubnet1
+                
+    PrivateSubnet2:
+        Type: AWS::EC2::Subnet
+        Properties:
+            AvailabilityZone: eu-west-1b
+            VpcId: 
+                Ref: MainVPC
+            MapPublicIpOnLaunch: true
+            CidrBlock: 10.0.1.0/24
+    ## Route Table Association
+    PrivateSubnet2RouteTableAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+            RouteTableId: 
+                Ref: PrivateRouteTable
+            SubnetId:
+                Ref: PrivateSubnet2
