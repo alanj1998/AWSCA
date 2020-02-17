@@ -10,7 +10,7 @@ Resources:
             InstanceTenancy: Default
     
     ## ACL
-    MainVPCPublicAcl:
+    PublicACL:
         Type: AWS::EC2::NetworkAcl
         Properties:    
             VpcId: 
@@ -20,7 +20,7 @@ Resources:
         Type: AWS::EC2::NetworkAclEntry
         Properties: 
             NetworkAclId:
-                Ref: MainVPCPublicAcl
+                Ref: PublicACL
             RuleNumber: 100
             Egress: false
             PortRange:
@@ -32,7 +32,7 @@ Resources:
         Type: AWS::EC2::NetworkAclEntry
         Properties: 
             NetworkAclId:
-                Ref: MainVPCPublicAcl
+                Ref: PublicACL
             RuleNumber: 100
             Egress: true
             PortRange:
@@ -155,7 +155,15 @@ Resources:
                 Ref: PublicRouteTable
             SubnetId:
                 Ref: PublicSubnet1
-    
+    ## ACL
+    PublicSubnet1ACLAssoc:
+        Type: AWS::EC2::SubnetNetworkAclAssociation
+        Properties:
+            NetworkAclId:
+                Ref: PublicACL
+            SubnetId:
+                Ref: PublicSubnet1
+                
     PublicSubnet2:
         Type: AWS::EC2::Subnet
         Properties:
@@ -173,6 +181,13 @@ Resources:
             SubnetId:
                 Ref: PublicSubnet2
     ## ACL
+    PublicSubnet2ACLAssoc:
+        Type: AWS::EC2::SubnetNetworkAclAssociation
+        Properties:
+            NetworkAclId:
+                Ref: PublicACL
+            SubnetId:
+                Ref: PublicSubnet2
     
     # Private Subnet
     PrivateSubnet1:
