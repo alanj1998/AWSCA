@@ -208,3 +208,35 @@ Resources:
                 Ref: PrivateRouteTable
             SubnetId:
                 Ref: PrivateSubnet2
+
+Outputs:
+    VPCId:
+        Description: Id of the VPC
+        Value: 
+            Ref: MainVPC
+        Export:
+            Name: VPCId
+    PublicSubnet1Id:
+        Description: Id of the public subnet 1
+        Value:
+            Ref: PublicSubnet1
+        Export:
+            Name: PublicSubnet1Id
+    PublicSubnet2Id:
+        Description: Id of the public subnet 2
+        Value:
+            Ref: PublicSubnet2
+        Export:
+            Name: PublicSubnet2Id
+    PrivateSubnet1Id:
+        Description: Id of the private subnet 1
+        Value:
+            Ref: PrivateSubnet1
+        Export:
+            Name: PrivateSubnet1Id
+    PrivateSubnet2Id:
+        Description: Id of the private subnet 2
+        Value:
+            Ref: PrivateSubnet2
+        Export:
+            Name: PrivateSubnet2Id
