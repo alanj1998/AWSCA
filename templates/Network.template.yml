@@ -240,3 +240,15 @@ Outputs:
             Ref: PrivateSubnet2
         Export:
             Name: PrivateSubnet2Id
+    NatGateway1Id:
+        Description: Id of NatGateway1
+        Value: 
+            Ref: NatGateway1
+        Export:
+            Name: NatGateway1Id
+    NatGateway2Id:
+        Description: Id of NatGateway2
+        Value:
+            Ref: NatGateway2
+        Export:
+            Name: NatGateway2Id
