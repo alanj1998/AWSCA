@@ -1,24 +1,20 @@
-AWSTemplateFormatVersion: 2010-09-09
+AWSTemplateFormatVersion: 2010-09-09T00:00:00.000Z
 Description: 'Main Application'
 Resources:
+    EFSStorage:
+        Type: 'AWS::EFS::FileSystem'
     BastionServer:
         Type: 'AWS::EC2::Instance'
         Properties:
             BlockDeviceMappings: [{DeviceName: /dev/sda, Ebs: {DeleteOnTermination: true, Encrypted: false, VolumeSize: 20}}]
             EbsOptimized: true
-            ImageId: ami-099a8245f5daa82b
+            ImageId: ami-099a8245f5daa82bf
             InstanceType: t2.micro
             KeyName: caBastionKey
             Monitoring: true
-            SecurityGroupId: [{Ref: BastionServerSecurityGroup}]
-            UserData: 
-                Fn::Sub:
-                    - |
-                      mkdir temp
-                      sudo yum install -y amazon-efs-utils
-                      sudo mount -t efs {FSStorage}:/ /temp
-                        
-                    - FSStorage: { Ref: EFSStorage }
+            SubnetId: {'Fn::ImportValue': PublicSubnet1Id}
+            SecurityGroupIds: [{Ref: BastionServerSecurityGroup}]
+            UserData: {'Fn::Base64': {'Fn::Sub': ["mkdir temp\nsudo yum install -y amazon-efs-utils\nsudo mount -t efs {FSStorage}:/ /temp\n", {FSStorage: {Ref: EFSStorage}}]}}
     BastionServerSecurityGroup:
         Type: 'AWS::EC2::SecurityGroup'
         Properties:
@@ -55,7 +51,7 @@ Resources:
         Type: 'AWS::EC2::LaunchTemplate'
         Properties:
             LaunchTemplateName: LaunchTemplateForServers
-            LaunchTemplateData: {BlockDeviceMappings: [{DeviceName: /dev/sda, Ebs: {DeleteOnTermination: true, Encrypted: false, VolumeSize: 20}}], EbsOptimized: true, ImageId: ami-099a8245f5daa82b, InstanceType: t2.micro, KeyName: caKey, Monitoring: true, SecurityGroupId: [{Ref: ServerSecurityGroup}], UserData: "yum update -y\nyum install -y httpd amazon-efs-utils\nsystemctl start httpd\nsystemctl enable httpd\nmkdir /var/www/html\n"}
+            LaunchTemplateData: {BlockDeviceMappings: [{DeviceName: /dev/sda, Ebs: {DeleteOnTermination: true, Encrypted: false, VolumeSize: 20}}], EbsOptimized: true, ImageId: ami-099a8245f5daa82bf, InstanceType: t2.micro, KeyName: caKey, Monitoring: true, SecurityGroupId: [{Ref: ServerSecurityGroup}], UserData: {'Fn::Base64': {'Fn::Join': ["yum update -y\nyum install -y httpd amazon-efs-utils\nsystemctl start httpd\nsystemctl enable httpd\nmkdir /var/www/html\nsudo yum install -y amazon-efs-utils\nsudo mount -t efs {FSStorage}:/ /var/www/html\n", {FSStorage: {Ref: EFSStorage}}]}}}
     AutoScalingGroupAZ1:
         Type: 'AWS::AutoScaling::AutoScalingGroup'
         Properties:
