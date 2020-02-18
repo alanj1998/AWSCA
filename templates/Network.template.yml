@@ -7,7 +7,6 @@ Resources:
         Type: AWS::EC2::VPC
         Properties:
             CidrBlock: 10.0.0.0/16
-            InstanceTenancy: Default
     
     ## ACL
     PublicACL:
@@ -168,7 +167,7 @@ Resources:
             VpcId: 
                 Ref: MainVPC
             MapPublicIpOnLaunch: true
-            CidrBlock: 10.0.1.0/24
+            CidrBlock: 10.0.3.0/24
     ## Route Table Association
     PublicSubnet2RouteTableAssociation:
         Type: AWS::EC2::SubnetRouteTableAssociation
@@ -194,7 +193,7 @@ Resources:
             VpcId: 
                 Ref: MainVPC
             MapPublicIpOnLaunch: true
-            CidrBlock: 10.0.1.0/24
+            CidrBlock: 10.0.2.0/24
     ## Route Table Association
     PrivateSubnet1RouteTableAssociation:
         Type: AWS::EC2::SubnetRouteTableAssociation
@@ -211,7 +210,7 @@ Resources:
             VpcId: 
                 Ref: MainVPC
             MapPublicIpOnLaunch: true
-            CidrBlock: 10.0.1.0/24
+            CidrBlock: 10.0.4.0/24
     ## Route Table Association
     PrivateSubnet2RouteTableAssociation:
         Type: AWS::EC2::SubnetRouteTableAssociation
