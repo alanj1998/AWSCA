@@ -11,6 +11,14 @@ Resources:
             KeyName: caBastionKey
             Monitoring: true
             SecurityGroupId: [{Ref: BastionServerSecurityGroup}]
+            UserData: 
+                Fn::Sub:
+                    - |
+                      mkdir temp
+                      sudo yum install -y amazon-efs-utils
+                      sudo mount -t efs {FSStorage}:/ /temp
+                        
+                    - FSStorage: { Ref: EFSStorage }
     BastionServerSecurityGroup:
         Type: 'AWS::EC2::SecurityGroup'
         Properties:
