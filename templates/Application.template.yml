@@ -1,265 +1,148 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Main Application 
+Description: 'Main Application'
 Resources:
     BastionServer:
-        Type: AWS::EC2::Instance
+        Type: 'AWS::EC2::Instance'
         Properties:
-            BlockDeviceMappings:
-                - DeviceName: /dev/sda
-                  Ebs:
-                    DeleteOnTermination: true
-                    Encrypted: false
-                    VolumeSize: 20
+            BlockDeviceMappings: [{DeviceName: /dev/sda, Ebs: {DeleteOnTermination: true, Encrypted: false, VolumeSize: 20}}]
             EbsOptimized: true
             ImageId: ami-099a8245f5daa82b
             InstanceType: t2.micro
             KeyName: caBastionKey
             Monitoring: true
-            SecurityGroupId: 
-                - Ref: BastionServerSecurityGroup
+            SecurityGroupId: [{Ref: BastionServerSecurityGroup}]
     BastionServerSecurityGroup:
-        Type: AWS::EC2::SecurityGroup
+        Type: 'AWS::EC2::SecurityGroup'
         Properties:
-            GroupDescription: BastionServer security group
+            GroupDescription: 'BastionServer security group'
             GroupName: BastionServerSecurityGroup
-            SecurityGroupIngress:
-                - CidrIp: 0.0.0.0/0
-                  FromPort: 22
-                  ToPort: 22
-                  IpProtocol: tcp
-            SecurityGroupEgress:
-                - CidrIp: 0.0.0.0/0
-                  FromPort: 0
-                  ToPort: 65535
-                  IpProtocol: tcp
-            
-    # Application Load Balancer
-    ## Security Groups
+            SecurityGroupIngress: [{CidrIp: 0.0.0.0/0, FromPort: 22, ToPort: 22, IpProtocol: tcp}]
+            SecurityGroupEgress: [{CidrIp: 0.0.0.0/0, FromPort: 0, ToPort: 65535, IpProtocol: tcp}]
+            VpcId: {'Fn::ImportValue': VPCId}
     LBSecurityGroup:
-        Type: AWS::EC2::SecurityGroup
+        Type: 'AWS::EC2::SecurityGroup'
         Properties:
             GroupDescription: SecurityGroupForTheLoadBalancer
             GroupName: LBInSecurityGroup
-            SecurityGroupIngress:
-                - CidrIp: 0.0.0.0/0
-                  FromPort: 80
-                  ToPort: 80
-                  IpProtocol: tcp
-                - CidrIp: 0.0.0.0/0
-                  FromPort: 443
-                  ToPort: 443
-                  IpProtocol: tcp
-                - CidrIp: 
-                    Fn::GetAtt: 
-                    - BastionServer
-                    - PublicIp
-                  FromPort: 22
-                  ToPort: 22
-                  IpProtocol: tcp
-            SecurityGroupEgress:
-                - CidrIp: 0.0.0.0/0
-                  FromPort: 0
-                  ToPort: 65535
-                  IpProtocol: tcp
+            SecurityGroupIngress: [{CidrIp: 0.0.0.0/0, FromPort: 80, ToPort: 80, IpProtocol: tcp}, {CidrIp: 0.0.0.0/0, FromPort: 443, ToPort: 443, IpProtocol: tcp}, {CidrIp: {'Fn::GetAtt': [BastionServer, PublicIp]}, FromPort: 22, ToPort: 22, IpProtocol: tcp}]
+            SecurityGroupEgress: [{CidrIp: 0.0.0.0/0, FromPort: 0, ToPort: 65535, IpProtocol: tcp, VpcId: {'Fn::ImportValue': VPCId}}]
     ServerSecurityGroup:
-        Type: AWS::EC2::SecurityGroup
+        Type: 'AWS::EC2::SecurityGroup'
         Properties:
             GroupDescription: SecurityGroupForTheLoadBalancer
             GroupName: LBInSecurityGroup
-            SecurityGroupIngress:
-                - FromPort: 80
-                  ToPort: 80
-                  IpProtocol: tcp
-                  SourcePrefixListId:
-                    Ref: ApplicationLoadBalancer
-                - FromPort: 443
-                  ToPort: 443
-                  IpProtocol: tcp
-                  SourcePrefixListId:
-                    Ref: ApplicationLoadBalancer
-                - CidrIp: 
-                    Fn::GetAtt: 
-                        - BastionServer
-                        - PublicIp
-                  FromPort: 22
-                  ToPort: 22
-                  IpProtocol: tcp
-            SecurityGroupEgress:
-                - CidrIp: 0.0.0.0/0
-                  FromPort: 0
-                  ToPort: 65535
-                  IpProtocol: tcp
-    ## Load Balancer
+            SecurityGroupIngress: [{FromPort: 80, ToPort: 80, IpProtocol: tcp, SourcePrefixListId: {Ref: ApplicationLoadBalancer}}, {FromPort: 443, ToPort: 443, IpProtocol: tcp, SourcePrefixListId: {Ref: ApplicationLoadBalancer}}, {CidrIp: {'Fn::GetAtt': [BastionServer, PublicIp]}, FromPort: 22, ToPort: 22, IpProtocol: tcp}]
+            SecurityGroupEgress: [{CidrIp: 0.0.0.0/0, FromPort: 0, ToPort: 65535, IpProtocol: tcp}]
+            VpcId: {'Fn::ImportValue': VPCId}
     ApplicationLoadBalancer:
-        Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+        Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
         Properties:
             IpAddressType: ipv4
             Type: application
-            Subnets:
-            - Fn::ImportValue PublicSubnetId1Id
-            - Fn::ImportValue PublicSubnetId2Id
-            SecurityGroups:
-            - Ref: LBSecurityGroup
-            VpcId: 
-                Fn::ImportValue: VPCId
+            Subnets: ['Fn::ImportValue PublicSubnetId1Id', 'Fn::ImportValue PublicSubnetId2Id']
+            SecurityGroups: [{Ref: LBSecurityGroup}]
+            VpcId: {'Fn::ImportValue': VPCId}
             Scheme: internet-facing
-    
-    # Launch Configuration
     LaunchTemplateForServers:
-        Type: AWS::EC2::LaunchTemplate
+        Type: 'AWS::EC2::LaunchTemplate'
         Properties:
             LaunchTemplateName: LaunchTemplateForServers
-            LaunchTemplateData:
-                BlockDeviceMappings:
-                    - DeviceName: /dev/sda
-                      Ebs:
-                        DeleteOnTermination: true
-                        Encrypted: false
-                        VolumeSize: 20
-                EbsOptimized: true
-                ImageId: ami-099a8245f5daa82b
-                InstanceType: t2.micro
-                KeyName: caKey
-                Monitoring: true
-                SecurityGroupId: 
-                    - Ref: ServerSecurityGroup
-                UserData: |
-                    yum update -y
-                    yum install -y httpd amazon-efs-utils
-                    systemctl start httpd
-                    systemctl enable httpd
-                    mkdir /var/www/html
-    # First Set In AZ1
-    ## Scaling Group itself :p
+            LaunchTemplateData: {BlockDeviceMappings: [{DeviceName: /dev/sda, Ebs: {DeleteOnTermination: true, Encrypted: false, VolumeSize: 20}}], EbsOptimized: true, ImageId: ami-099a8245f5daa82b, InstanceType: t2.micro, KeyName: caKey, Monitoring: true, SecurityGroupId: [{Ref: ServerSecurityGroup}], UserData: "yum update -y\nyum install -y httpd amazon-efs-utils\nsystemctl start httpd\nsystemctl enable httpd\nmkdir /var/www/html\n"}
     AutoScalingGroupAZ1:
-        Type: AWS::AutoScaling::AutoScalingGroup
-        Properties: 
+        Type: 'AWS::AutoScaling::AutoScalingGroup'
+        Properties:
             AutoScalingGroupName: AutoScalingGroupAZ1
-            AvailabilityZones:
-                - eu-west-1a
+            AvailabilityZones: [eu-west-1a]
             DesiredCapacity: 1
             MaxSize: 4
             MinSize: 1
-            LaunchConfigurationName:
-              Ref: LaunchTemplateForServers
-            LoadBalancerNames:
-                - Ref: ApplicationLoadBalancer
-            VPCZoneIdentifier:
-                - Fn::ImportValue: PrivateSubnet1Id
-    ## Scaling Policies
+            LaunchConfigurationName: {Ref: LaunchTemplateForServers}
+            LoadBalancerNames: [{Ref: ApplicationLoadBalancer}]
+            VPCZoneIdentifier: [{'Fn::ImportValue': PrivateSubnet1Id}]
     AutoScalingGroupAZ1ScaleUpPolicy:
-        Type: AWS::AutoScaling::ScalingPolicy
+        Type: 'AWS::AutoScaling::ScalingPolicy'
         Properties:
             AdjustmentType: ChangeInCapacity
-            AutoScalingGroupName:
-                Ref: AutoScalingGroupAZ1
+            AutoScalingGroupName: {Ref: AutoScalingGroupAZ1}
             Cooldown: 60
             ScalingAdjustment: 1
     AutoScalingGroupAZ1ScaleDownPolicy:
-        Type: AWS::AutoScaling::ScalingPolicy
+        Type: 'AWS::AutoScaling::ScalingPolicy'
         Properties:
             AdjustmentType: ChangeInCapacity
-            AutoScalingGroupName:
-                Ref: AutoScalingGroupAZ1
+            AutoScalingGroupName: {Ref: AutoScalingGroupAZ1}
             Cooldown: 60
             ScalingAdjustment: -1
-    ## Alarms
     AZ1AlarmCPULow:
-        Type: AWS::CloudWatch::Alarm
+        Type: 'AWS::CloudWatch::Alarm'
         Properties:
-            AlarmDescription: Scale Down if CPU < 40% for 15 minutes
+            AlarmDescription: 'Scale Down if CPU < 40% for 15 minutes'
             MetricName: CPUUtilization
             Namespace: AWS/EC2
             Statistics: Average
             Period: 300
             EvaluationPeriods: 3
-            AlarmLocations: 
-                Ref: AutoScalingGroupAZ1ScaleDownPolicy
+            AlarmLocations: {Ref: AutoScalingGroupAZ1ScaleDownPolicy}
             ComparisonOperator: LessThanThreshold
-            Dimensions:
-            -   Name: AutoScalingGroupName
-                Value: 
-                    Ref: AutoScalingGroupAZ1
+            Dimensions: [{Name: AutoScalingGroupName, Value: {Ref: AutoScalingGroupAZ1}}]
     AZ1AlarmCPUHigh:
-        Type: AWS::CloudWatch::Alarm
+        Type: 'AWS::CloudWatch::Alarm'
         Properties:
-            AlarmDescription: Scale Up if CPU > 60% for 5 minutes
+            AlarmDescription: 'Scale Up if CPU > 60% for 5 minutes'
             MetricName: CPUUtilization
             Namespace: AWS/EC2
             Statistics: Average
             Period: 100
             EvaluationPeriods: 3
-            AlarmLocations: 
-                Ref: AutoScalingGroupAZ1ScaleUpPolicy
+            AlarmLocations: {Ref: AutoScalingGroupAZ1ScaleUpPolicy}
             ComparisonOperator: LessThanThreshold
-            Dimensions:
-            -   Name: AutoScalingGroupName
-                Value: 
-                    Ref: AutoScalingGroupAZ1
-    
-    # Second Set in AZ2
+            Dimensions: [{Name: AutoScalingGroupName, Value: {Ref: AutoScalingGroupAZ1}}]
     AutoScalingGroupAZ2:
-        Type: AWS::AutoScaling::AutoScalingGroup
-        Properties: 
+        Type: 'AWS::AutoScaling::AutoScalingGroup'
+        Properties:
             AutoScalingGroupName: AutoScalingGroupAZ2
-            AvailabilityZones:
-                - eu-west-1b
+            AvailabilityZones: [eu-west-1b]
             DesiredCapacity: 1
             MaxSize: 4
             MinSize: 1
-            LaunchConfigurationName:
-              Ref: LaunchTemplateForServers
-            LoadBalancerNames:
-                - Ref: ApplicationLoadBalancer
-            VPCZoneIdentifier:
-                - Fn::ImportValue: PrivateSubnet2Id
-    ## Scaling Policies
+            LaunchConfigurationName: {Ref: LaunchTemplateForServers}
+            LoadBalancerNames: [{Ref: ApplicationLoadBalancer}]
+            VPCZoneIdentifier: [{'Fn::ImportValue': PrivateSubnet2Id}]
     AutoScalingGroupAZ2ScaleUpPolicy:
-        Type: AWS::AutoScaling::ScalingPolicy
+        Type: 'AWS::AutoScaling::ScalingPolicy'
         Properties:
             AdjustmentType: ChangeInCapacity
-            AutoScalingGroupName:
-                Ref: AutoScalingGroupAZ2
+            AutoScalingGroupName: {Ref: AutoScalingGroupAZ2}
             Cooldown: 60
             ScalingAdjustment: 1
     AutoScalingGroupAZ2ScaleDownPolicy:
-        Type: AWS::AutoScaling::ScalingPolicy
+        Type: 'AWS::AutoScaling::ScalingPolicy'
         Properties:
             AdjustmentType: ChangeInCapacity
-            AutoScalingGroupName:
-                Ref: AutoScalingGroupAZ2
+            AutoScalingGroupName: {Ref: AutoScalingGroupAZ2}
             Cooldown: 60
             ScalingAdjustment: -1
-    ## Alarms
     AZ2AlarmCPULow:
-        Type: AWS::CloudWatch::Alarm
+        Type: 'AWS::CloudWatch::Alarm'
         Properties:
-            AlarmDescription: Scale Down if CPU < 40% for 15 minutes
+            AlarmDescription: 'Scale Down if CPU < 40% for 15 minutes'
             MetricName: CPUUtilization
             Namespace: AWS/EC2
             Statistics: Average
             Period: 300
             EvaluationPeriods: 3
-            AlarmLocations: 
-                Ref: AutoScalingGroupAZ2ScaleDownPolicy
+            AlarmLocations: {Ref: AutoScalingGroupAZ2ScaleDownPolicy}
             ComparisonOperator: LessThanThreshold
-            Dimensions:
-            -   Name: AutoScalingGroupName
-                Value: 
-                    Ref: AutoScalingGroupAZ2
+            Dimensions: [{Name: AutoScalingGroupName, Value: {Ref: AutoScalingGroupAZ2}}]
     AZ2AlarmCPUHigh:
-        Type: AWS::CloudWatch::Alarm
+        Type: 'AWS::CloudWatch::Alarm'
         Properties:
-            AlarmDescription: Scale Up if CPU > 60% for 5 minutes
+            AlarmDescription: 'Scale Up if CPU > 60% for 5 minutes'
             MetricName: CPUUtilization
             Namespace: AWS/EC2
             Statistics: Average
             Period: 100
             EvaluationPeriods: 3
-            AlarmLocations: 
-                Ref: AutoScalingGroupAZ2ScaleUpPolicy
+            AlarmLocations: {Ref: AutoScalingGroupAZ2ScaleUpPolicy}
             ComparisonOperator: LessThanThreshold
-            Dimensions:
-            -   Name: AutoScalingGroupName
-                Value: 
-                    Ref: AutoScalingGroupAZ2
+            Dimensions: [{Name: AutoScalingGroupName, Value: {Ref: AutoScalingGroupAZ2}}]
