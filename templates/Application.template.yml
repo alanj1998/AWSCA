@@ -75,7 +75,7 @@ Resources:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: SecurityGroupForTheLoadBalancer
-      GroupName: LBInSecurityGroup
+      GroupName: ServerSecurityGroup
       SecurityGroupIngress:
         - FromPort: 80
           ToPort: 80
@@ -104,8 +104,8 @@ Resources:
       IpAddressType: ipv4
       Type: application
       Subnets:
-        - 'Fn::ImportValue PublicSubnet1Id'
-        - 'Fn::ImportValue PublicSubnet2Id'
+        - Fn::ImportValue: PublicSubnet1Id
+        - Fn::ImportValue: PublicSubnet2Id
       SecurityGroups:
         - Ref: LBSecurityGroup
       Scheme: internet-facing
