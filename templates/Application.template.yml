@@ -12,7 +12,6 @@ Resources:
             DeleteOnTermination: true
             Encrypted: false
             VolumeSize: 20
-      EbsOptimized: true
       ImageId: ami-099a8245f5daa82bf
       InstanceType: t2.micro
       KeyName: caBastionKey
@@ -73,8 +72,8 @@ Resources:
           FromPort: 0
           ToPort: 65535
           IpProtocol: tcp
-          VpcId:
-            'Fn::ImportValue': VPCId
+      VpcId:
+        'Fn::ImportValue': VPCId
   ServerSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -129,7 +128,6 @@ Resources:
               DeleteOnTermination: true
               Encrypted: false
               VolumeSize: 20
-        EbsOptimized: true
         ImageId: ami-099a8245f5daa82bf
         InstanceType: t2.micro
         KeyName: caKey
