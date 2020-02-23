@@ -60,10 +60,7 @@ Resources:
           FromPort: 443
           ToPort: 443
           IpProtocol: tcp
-        - CidrIp:
-            'Fn::GetAtt':
-              - BastionServer
-              - PublicIp
+        - CidrIp: 10.0.0.0/16
           FromPort: 22
           ToPort: 22
           IpProtocol: tcp
@@ -90,10 +87,7 @@ Resources:
           IpProtocol: tcp
           SourcePrefixListId:
             Ref: ApplicationLoadBalancer
-        - CidrIp:
-            'Fn::GetAtt':
-              - BastionServer
-              - PublicIp
+        - CidrIp: 10.0.0.0/16
           FromPort: 22
           ToPort: 22
           IpProtocol: tcp
@@ -110,8 +104,8 @@ Resources:
       IpAddressType: ipv4
       Type: application
       Subnets:
-        - 'Fn::ImportValue PublicSubnetId1Id'
-        - 'Fn::ImportValue PublicSubnetId2Id'
+        - 'Fn::ImportValue PublicSubnet1Id'
+        - 'Fn::ImportValue PublicSubnet2Id'
       SecurityGroups:
         - Ref: LBSecurityGroup
       Scheme: internet-facing
