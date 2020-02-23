@@ -80,13 +80,13 @@ Resources:
         - FromPort: 80
           ToPort: 80
           IpProtocol: tcp
-          SourcePrefixListId:
-            Ref: ApplicationLoadBalancer
+          SourceSecurityGroupId:
+            Ref: LBSecurityGroup
         - FromPort: 443
           ToPort: 443
           IpProtocol: tcp
-          SourcePrefixListId:
-            Ref: ApplicationLoadBalancer
+          SourceSecurityGroupId:
+            Ref: LBSecurityGroup
         - CidrIp: 10.0.0.0/16
           FromPort: 22
           ToPort: 22
