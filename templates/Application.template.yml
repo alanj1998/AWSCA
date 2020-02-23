@@ -114,8 +114,6 @@ Resources:
         - 'Fn::ImportValue PublicSubnetId2Id'
       SecurityGroups:
         - Ref: LBSecurityGroup
-      VpcId:
-        'Fn::ImportValue': VPCId
       Scheme: internet-facing
   LaunchTemplateForServers:
     Type: 'AWS::EC2::LaunchTemplate'
