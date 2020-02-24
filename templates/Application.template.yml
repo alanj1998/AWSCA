@@ -147,6 +147,7 @@ Resources:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     DependsOn:
       - LaunchTemplateForServers
+      - ApplicationLoadBalancer
     Properties:
       AutoScalingGroupName: AutoScalingGroupAZ1
       AvailabilityZones:
@@ -217,6 +218,7 @@ Resources:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
     DependsOn:
       - LaunchTemplateForServers
+      - ApplicationLoadBalancer
     Properties:
       AutoScalingGroupName: AutoScalingGroupAZ2
       AvailabilityZones:
