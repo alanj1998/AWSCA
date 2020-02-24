@@ -102,6 +102,7 @@ Resources:
   ApplicationLoadBalancer:
     Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
     Properties:
+      Name: ApplicationLoadBalancer
       IpAddressType: ipv4
       Type: application
       Subnets:
@@ -161,7 +162,7 @@ Resources:
             - LaunchTemplateForServers
             - LatestVersionNumber
       LoadBalancerNames:
-        - Ref: ApplicationLoadBalancer
+        - ApplicationLoadBalancer
       VPCZoneIdentifier:
         - 'Fn::ImportValue': PrivateSubnet1Id
   AutoScalingGroupAZ1ScaleUpPolicy:
@@ -231,7 +232,7 @@ Resources:
             - LaunchTemplateForServers
             - LatestVersionNumber
       LoadBalancerNames:
-        - Ref: ApplicationLoadBalancer
+        - ApplicationLoadBalancer
       VPCZoneIdentifier:
         - 'Fn::ImportValue': PrivateSubnet2Id
   AutoScalingGroupAZ2ScaleUpPolicy:
