@@ -154,13 +154,12 @@ Resources:
       MaxSize: 4
       MinSize: 1
       LaunchTemplate:
-          LaunchTemplateSpecification:
-            LaunchTemplateId:
-              Ref: LaunchTemplateForServers
-            Version:
-              Fn::GetAtt:
-              - LaunchTemplateForServers
-              - LatestVersionNumber
+        LaunchTemplateId:
+          Ref: LaunchTemplateForServers
+        Version:
+          'Fn::GetAtt':
+            - LaunchTemplateForServers
+            - LatestVersionNumber
       LoadBalancerNames:
         - Ref: ApplicationLoadBalancer
       VPCZoneIdentifier:
@@ -225,13 +224,12 @@ Resources:
       MaxSize: 4
       MinSize: 1
       LaunchTemplate:
-          LaunchTemplateSpecification:
-            LaunchTemplateId:
-              Ref: LaunchTemplateForServers
-            Version:
-              Fn::GetAtt:
-              - LaunchTemplateForServers
-              - LatestVersionNumber
+        LaunchTemplateId:
+          Ref: LaunchTemplateForServers
+        Version:
+          'Fn::GetAtt':
+            - LaunchTemplateForServers
+            - LatestVersionNumber
       LoadBalancerNames:
         - Ref: ApplicationLoadBalancer
       VPCZoneIdentifier:
