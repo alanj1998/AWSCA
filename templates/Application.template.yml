@@ -123,7 +123,7 @@ Resources:
         ImageId: ami-099a8245f5daa82bf
         InstanceType: t2.micro
         KeyName: caKey
-        Monitoring: 
+        Monitoring:
           Enabled: true
         SecurityGroupIds:
           - Ref: ServerSecurityGroup
@@ -211,8 +211,7 @@ Resources:
       DesiredCapacity: 1
       MaxSize: 4
       MinSize: 1
-      LaunchConfigurationName:
-        Ref: LaunchTemplateForServers
+      LaunchConfigurationName: LaunchTemplateForServers
       LoadBalancerNames:
         - Ref: ApplicationLoadBalancer
       VPCZoneIdentifier:
