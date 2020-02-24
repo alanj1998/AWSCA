@@ -144,6 +144,8 @@ Resources:
                   Ref: EFSStorage
   AutoScalingGroupAZ1:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
+    DependsOn:
+      - LaunchTemplateForServers
     Properties:
       AutoScalingGroupName: AutoScalingGroupAZ1
       AvailabilityZones:
@@ -151,7 +153,14 @@ Resources:
       DesiredCapacity: 1
       MaxSize: 4
       MinSize: 1
-      LaunchConfigurationName: LaunchTemplateForServers
+      LaunchTemplate:
+          LaunchTemplateSpecification:
+            LaunchTemplateId:
+              Ref: LaunchTemplateForServers
+            Version:
+              Fn::GetAtt:
+              - LaunchTemplateForServers
+              - LatestVersionNumber
       LoadBalancerNames:
         - Ref: ApplicationLoadBalancer
       VPCZoneIdentifier:
@@ -206,6 +215,8 @@ Resources:
             Ref: AutoScalingGroupAZ1
   AutoScalingGroupAZ2:
     Type: 'AWS::AutoScaling::AutoScalingGroup'
+    DependsOn:
+      - LaunchTemplateForServers
     Properties:
       AutoScalingGroupName: AutoScalingGroupAZ2
       AvailabilityZones:
@@ -213,7 +224,14 @@ Resources:
       DesiredCapacity: 1
       MaxSize: 4
       MinSize: 1
-      LaunchConfigurationName: LaunchTemplateForServers
+      LaunchTemplate:
+          LaunchTemplateSpecification:
+            LaunchTemplateId:
+              Ref: LaunchTemplateForServers
+            Version:
+              Fn::GetAtt:
+              - LaunchTemplateForServers
+              - LatestVersionNumber
       LoadBalancerNames:
         - Ref: ApplicationLoadBalancer
       VPCZoneIdentifier:
