@@ -24,6 +24,7 @@ Resources:
         'Fn::Base64':
           'Fn::Sub':
             - |
+              #!/bin/bash
               mkdir temp
               sudo yum install -y amazon-efs-utils
               sudo mount -t efs {FSStorage}:/ /temp
@@ -131,6 +132,7 @@ Resources:
           'Fn::Base64':
             'Fn::Sub':
               - |
+                #!/bin/bash
                 yum update -y
                 yum install -y httpd amazon-efs-utils
                 systemctl start httpd
